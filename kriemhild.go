@@ -46,7 +46,7 @@ func kriemhild() error {
 	diff := subimage(nrgbas[1], nrgbas[0])
 	diff = quodiff(diff, float64(args.factor))
 
-	out := kriemhildtrans(nrgbas[0], nrgbas[1], diff, args.factor)
+	out := kriemhildtrans(nrgbas[0], nrgbas[1], diff, args.factor * 10)
 
 	return saveoutput(out)
 }
@@ -184,6 +184,29 @@ func subdiff(a, b imagediff) imagediff {
 			ccd.r = acd.r - bcd.r
 			ccd.g = acd.g - bcd.g
 			ccd.b = acd.b - bcd.b
+
+			c.set(i, j, ccd)
+		}
+	}
+
+	return c
+}
+
+func adddiff(a, b imagediff) imagediff {
+	c := imagediff{}
+	c.diff = make([][]colordiff, len(a.diff))
+	for i := 0; i < len(a.diff); i++ {
+		c.diff[i] = make([]colordiff, len(a.diff[0]))
+	}
+
+	for i, row := range a.diff {
+		for j, acd := range row {
+			bcd := b.at(i, j)
+
+			ccd := colordiff{}
+			ccd.r = acd.r + bcd.r
+			ccd.g = acd.g + bcd.g
+			ccd.b = acd.b + bcd.b
 
 			c.set(i, j, ccd)
 		}
@@ -409,7 +432,7 @@ func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, factor int) []*imag
 
 	last := img2diff(picA)
 	for i := 1; i < len(out) - 1; i++ {
-		last = subdiff(last, diff)
+		last = adddiff(last, diff)
 		out[i] = diff2img(last)
 	}
 
