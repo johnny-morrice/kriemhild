@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"flag"
 	"image"
+	"image/color"
 	"math"
 	"os"
 	"github.com/disintegration/imaging"
@@ -42,13 +43,10 @@ func kriemhild() error {
 		nrgbas[i] = imaging.Clone(pic)
 	}
 
-	from := subimage(nrgbas[1], nrgbas[0])
-	from = quodiff(from, float64(args.frames))
+	diff := subimage(nrgbas[1], nrgbas[0])
+	diff = quodiff(diff, float64(args.factor))
 
-	to := subimage(nrgbas[0], nrgbas[1])
-	to = quodiff(to, float64(args.frames))
-
-	out := kriemhildtrans(nrgbas[0], nrgbas[1], from, to, args.frames)
+	out := kriemhildtrans(nrgbas[0], nrgbas[1], diff, args.factor)
 
 	return saveoutput(out)
 }
@@ -59,6 +57,10 @@ type imagediff struct {
 
 func (id imagediff) at(x, y int) colordiff {
 	return id.diff[x][y]
+}
+
+func (id imagediff) set(x, y int, cd colordiff) {
+	id.diff[x][y] = cd
 }
 
 type colordiff struct {
@@ -92,11 +94,7 @@ func loopbounds(pic *image.NRGBA) bounds {
 func subimage(a, b *image.NRGBA) imagediff {
 	bounds := loopbounds(a)
 
-	diff := imagediff{}
-	diff.diff = make([][]colordiff, bounds.xtot)
-	for i := 0; i < bounds.xtot; i++ {
-		diff.diff[i] = make([]colordiff, bounds.ytot)
-	}
+	diff := boundsdiff(bounds)
 
 	x := bounds.xmin
 	for i := 0; i < bounds.xtot; i++ {
@@ -169,6 +167,97 @@ func subimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {
 	}
 
 	return sum
+}
+
+func subdiff(a, b imagediff) imagediff {
+	c := imagediff{}
+	c.diff = make([][]colordiff, len(a.diff))
+	for i := 0; i < len(a.diff); i++ {
+		c.diff[i] = make([]colordiff, len(a.diff[0]))
+	}
+
+	for i, row := range a.diff {
+		for j, acd := range row {
+			bcd := b.at(i, j)
+
+			ccd := colordiff{}
+			ccd.r = acd.r - bcd.r
+			ccd.g = acd.g - bcd.g
+			ccd.b = acd.b - bcd.b
+
+			c.set(i, j, ccd)
+		}
+	}
+
+	return c
+}
+
+func img2diff(pic *image.NRGBA) imagediff {
+	bounds := loopbounds(pic)
+
+	diff := boundsdiff(bounds)
+
+	x := bounds.xmin
+	for i := 0; i < bounds.xtot; i++ {
+		y := bounds.ymin
+		for j := 0; j < bounds.ytot; j++ {
+			col := pic.NRGBAAt(x, y)
+
+			cd := colordiff{}
+			cd.r = float64(col.R)
+			cd.g = float64(col.G)
+			cd.b = float64(col.B)
+
+			diff.set(i, j, cd)
+
+			y++
+		}
+		x++
+	}
+
+	return diff
+}
+
+func diff2img(diff imagediff) *image.NRGBA {
+	rect := image.Rectangle{}
+	rect.Max.X = len(diff.diff)
+	rect.Max.Y = len(diff.diff[0])
+
+	pic := image.NewNRGBA(rect)
+
+	bounds := loopbounds(pic)
+
+	x := bounds.xmin
+	for i := 0; i < bounds.xtot; i++ {
+		y := bounds.ymin
+		for j := 0; j < bounds.ytot; j++ {
+			cd := diff.at(i, j)
+
+			col := color.NRGBA{}
+
+			col.R = uint8(round(cd.r) % 255)
+			col.G = uint8(round(cd.g) % 255)
+			col.B = uint8(round(cd.b) % 255)
+			col.A = 255
+
+			pic.SetNRGBA(x, y, col)
+
+			y++
+		}
+		x++
+	}
+
+	return pic
+}
+
+func boundsdiff(bounds bounds) imagediff {
+	diff := imagediff{}
+	diff.diff = make([][]colordiff, bounds.xtot)
+	for i := 0; i < bounds.xtot; i++ {
+		diff.diff[i] = make([]colordiff, bounds.ytot)
+	}
+
+	return diff
 }
 
 func round(x float64) uint8 {
@@ -312,17 +401,16 @@ func writeimage(i int, pic image.Image) error {
 	return imaging.Encode(f, pic, imaging.PNG)
 }
 
-func kriemhildtrans(picA, picB *image.NRGBA, from, to imagediff, frames int) []*image.NRGBA {
-	outlen := frames + 1
+func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, factor int) []*image.NRGBA {
+	outlen := factor + 1
 	out := make([]*image.NRGBA, outlen)
 	out[0] = picA
 	out[outlen - 1] = picB
 
-	last := out[0]
+	last := img2diff(picA)
 	for i := 1; i < len(out) - 1; i++ {
-		last = subimagediff(last, from)
-		last = addimagediff(last, to)
-		out[i] = last
+		last = subdiff(last, diff)
+		out[i] = diff2img(last)
 	}
 
 	return out
@@ -331,13 +419,13 @@ func kriemhildtrans(picA, picB *image.NRGBA, from, to imagediff, frames int) []*
 type params struct {
 	picA string
 	picB string
-	frames int
+	factor int
 }
 
 func readargs() (*params, error) {
 	picA := flag.String("imageA", "", "The first image")
 	picB := flag.String("imageB", "", "The second image")
-	frames := flag.Uint("frames", 8, "The number of frames between")
+	factor := flag.Uint("factor", 10, "Merge factor")
 
 	flag.Parse()
 
@@ -345,7 +433,7 @@ func readargs() (*params, error) {
 
 	args.picA = *picA
 	args.picB = *picB
-	args.frames = int(*frames)
+	args.factor = int(*factor)
 
 	if args.picA == "" || args.picB == "" {
 		flag.Usage()
