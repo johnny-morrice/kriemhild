@@ -301,5 +301,11 @@ func readargs() (*params, error) {
 	args.picB = *picB
 	args.frames = int(*frames)
 
+	if args.picA == "" || args.picB == "" {
+		flag.Usage()
+		
+		return nil, fmt.Errorf("Missing input path")
+	}
+
 	return args, nil
 }
