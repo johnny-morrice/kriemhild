@@ -191,14 +191,18 @@ func readimages(paths []string) ([]image.Image, error) {
 	picch := make([]chan image.Image, len(paths))
 
 	for i, _ := range picch {
-		picch[i] = make(chan image.Image)
+		picch[i] = make(chan image.Image, 1)
 	}
 
 	pics := make([]image.Image, len(paths))
-	errch := make(chan error)
+	errch := make([]chan error, len(paths))
+
+	for i, _ := range errch {
+		errch[i] = make(chan error, 1)
+	}
 
 	for i := 0; i < len(paths); i++ {
-		go func(path string, ch chan<- image.Image) {
+		go func(path string, ch chan<- image.Image, errch chan<- error) {
 			img, err := imaging.Open(path)
 
 			if err != nil {
@@ -206,20 +210,15 @@ func readimages(paths []string) ([]image.Image, error) {
 				return
 			}
 
-			errch<- nil
+			close(errch)
 			ch<- img
-		}(paths[i], picch[i])
+		}(paths[i], picch[i], errch[i])
 	}
 
-	var catch error
-	for err := range errch {
-		if err != nil {
-			catch = err
-		}
-	}
+	err := filter(errch)
 
-	if catch != nil {
-		return nil, catch
+	if err != nil {
+		return nil, err
 	}
 
 	for i, ch := range picch {
@@ -230,24 +229,42 @@ func readimages(paths []string) ([]image.Image, error) {
 }
 
 func saveoutput(out []*image.NRGBA) error {
-	errch := make(chan error)
+	errch := make([]chan error, len(out))
+
+	const limit = 10
+	sem := make(chan struct{}, limit)
+
+	for i, _ := range errch {
+		errch[i] = make(chan error, 1)
+	}
+
 
 	for i, pic := range out {
-		go func(i int, pic image.Image) {
+		go func(i int, pic image.Image, errch chan<- error) {
+			sem<- struct{}{}
+			
+			defer func() { <-sem }()
 			err := writeimage(i, pic)
 
 			if err != nil {
 				errch<- err
+
 				return
 			}
 
 			errch<- nil
-		}(i, pic)
+		}(i, pic, errch[i])
 	}
 
+	return filter(errch)
+}
+
+func filter(errch []chan error) error {
 	var catch error
-	for err := range errch {
-		if err != nil {
+
+	for _, ech := range errch {
+		err, ok := <-ech
+		if ok {
 			catch = err
 		}
 	}
@@ -303,7 +320,7 @@ func readargs() (*params, error) {
 
 	if args.picA == "" || args.picB == "" {
 		flag.Usage()
-		
+
 		return nil, fmt.Errorf("Missing input path")
 	}
 
