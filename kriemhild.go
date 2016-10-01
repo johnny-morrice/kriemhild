@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"flag"
 	"image"
+	"math"
 	"os"
 	"github.com/disintegration/imaging"
 )
@@ -14,7 +15,6 @@ func main() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 	}
-
 }
 
 func kriemhild() error {
@@ -25,29 +25,164 @@ func kriemhild() error {
 	}
 
 	paths := []string { args.picA, args.picB, }
-	pics, err := readimages(paths)
+	imgs, err := readimages(paths)
 
-	diff := subimage(pics[0], pics[1])
+	if err != nil {
+		return err
+	}
+
+	err = checkbounds(imgs)
+
+	if err != nil {
+		return err
+	}
+
+	nrgbas := make([]*image.NRGBA, len(imgs))
+	for i, pic := range imgs {
+		nrgbas[i] = imaging.Clone(pic)
+	}
+
+	diff := subimage(nrgbas[0], nrgbas[1])
 	fracdiff := quodiff(diff, args.frames)
 
-	out := kriemhildtrans(pics[0], pics[1], fracdiff, args.frames)
+	out := kriemhildtrans(nrgbas[0], nrgbas[1], fracdiff, args.frames)
 
 	return saveoutput(out)
 }
 
 type imagediff struct {
+	diff [][]colordiff
 }
 
-func subimage(a, b image.Image) imagediff {
-	return imagediff{}
+func (id imagediff) at(x, y int) colordiff {
+	return id.diff[x][y]
 }
 
-func addimagediff(pic image.Image, diff imagediff) image.Image {
-	return nil
+type colordiff struct {
+	r float64
+	b float64
+	g float64
+}
+
+type bounds struct {
+	xmin int
+	ymin int
+	xtot int
+	ytot int
+}
+
+func loopbounds(pic *image.NRGBA) bounds {
+	rec := pic.Bounds()
+
+	b := bounds{}
+
+	b.xmin = rec.Min.X;
+	b.ymin = rec.Min.Y;
+	xmax := rec.Max.X;
+	ymax := rec.Max.Y;
+	b.xtot = xmax - b.xmin;
+	b.ytot = ymax - b.ymin;
+
+	return b
+}
+
+func subimage(a, b *image.NRGBA) imagediff {
+	bounds := loopbounds(a)
+
+	diff := imagediff{}
+	diff.diff = make([][]colordiff, bounds.xtot)
+	for i := 0; i < bounds.xtot; i++ {
+		diff.diff[i] = make([]colordiff, bounds.ytot)
+	}
+
+	x := bounds.xmin
+	for i := 0; i < bounds.xtot; i++ {
+		y := bounds.ymin
+		for j := 0; j < bounds.ytot; j++ {
+			cA := a.NRGBAAt(x, y)
+			cB := b.NRGBAAt(x, y)
+
+			cd := colordiff{}
+			cd.r = float64(cB.R - cA.R)
+			cd.g = float64(cB.G - cA.G)
+			cd.b = float64(cB.B - cA.B)
+
+			diff.diff[i][j] = cd
+			y++
+		}
+		x++
+	}
+
+	return diff
+}
+
+func addimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {
+	bounds := loopbounds(pic)
+
+	sum := imaging.Clone(pic)
+
+	x := bounds.xmin
+	for i := 0; i < bounds.xtot; i++ {
+		y := bounds.ymin
+		for j := 0; j < bounds.ytot; j++ {
+			cd := diff.at(x, y)
+			col := sum.NRGBAAt(x, y)
+
+			col.R = round(float64(col.R) + cd.r)
+			col.G = round(float64(col.G) + cd.g)
+			col.B = round(float64(col.B) + cd.b)
+
+			sum.Set(x, y, col)
+
+			y++
+		}
+		x++
+	}
+
+	return sum
+}
+
+func round(x float64) uint8 {
+	if x - math.Floor(x) >= 0.5 {
+		return uint8(math.Ceil(x))
+	}
+
+	return uint8(math.Floor(x))
 }
 
 func quodiff(diff imagediff, div int) imagediff {
-	return imagediff{}
+	quo := imagediff{}
+	quo.diff = make([][]colordiff, len(diff.diff))
+
+	rowlen := len(diff.diff[0])
+	for i, _ := range quo.diff {
+		quo.diff[i] = make([]colordiff, rowlen)
+	}
+
+	fdiv := float64(div)
+	for i, row := range diff.diff {
+		for j, cd := range row {
+			cd.r = cd.r / fdiv
+			cd.g = cd.r / fdiv
+			cd.b = cd.r / fdiv
+
+			quo.diff[i][j] = cd
+		}
+	}
+
+	return quo
+}
+
+func checkbounds(imgs []image.Image) error {
+	first := imgs[0].Bounds();
+
+	for i := 1; i < len(imgs); i++ {
+		if first != imgs[i].Bounds() {
+			return fmt.Errorf("Image %v bounds differ", i)
+		}
+	}
+
+	return nil
 }
 
 func readimages(paths []string) ([]image.Image, error) {
@@ -94,7 +229,7 @@ func readimages(paths []string) ([]image.Image, error) {
 	return pics, nil
 }
 
-func saveoutput(out []image.Image) error {
+func saveoutput(out []*image.NRGBA) error {
 	errch := make(chan error)
 
 	for i, pic := range out {
@@ -132,9 +267,9 @@ func writeimage(i int, pic image.Image) error {
 	return imaging.Encode(f, pic, imaging.PNG)
 }
 
-func kriemhildtrans(picA, picB image.Image, diff imagediff, frames int) []image.Image {
+func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, frames int) []*image.NRGBA {
 	outlen := frames + 1
-	out := make([]image.Image, outlen)
+	out := make([]*image.NRGBA, outlen)
 	out[0] = picA
 	out[outlen - 1] = picB
 
