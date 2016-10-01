@@ -42,10 +42,13 @@ func kriemhild() error {
 		nrgbas[i] = imaging.Clone(pic)
 	}
 
-	diff := subimage(nrgbas[0], nrgbas[1])
-	fracdiff := quodiff(diff, args.frames)
+	from := subimage(nrgbas[1], nrgbas[0])
+	from = quodiff(from, float64(args.frames))
 
-	out := kriemhildtrans(nrgbas[0], nrgbas[1], fracdiff, args.frames)
+	to := subimage(nrgbas[0], nrgbas[1])
+	to = quodiff(to, float64(args.frames))
+
+	out := kriemhildtrans(nrgbas[0], nrgbas[1], from, to, args.frames)
 
 	return saveoutput(out)
 }
@@ -142,6 +145,32 @@ func addimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {
 	return sum
 }
 
+func subimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {
+	bounds := loopbounds(pic)
+
+	sum := imaging.Clone(pic)
+
+	x := bounds.xmin
+	for i := 0; i < bounds.xtot; i++ {
+		y := bounds.ymin
+		for j := 0; j < bounds.ytot; j++ {
+			cd := diff.at(x, y)
+			col := sum.NRGBAAt(x, y)
+
+			col.R = round(float64(col.R) - cd.r)
+			col.G = round(float64(col.G) - cd.g)
+			col.B = round(float64(col.B) - cd.b)
+
+			sum.Set(x, y, col)
+
+			y++
+		}
+		x++
+	}
+
+	return sum
+}
+
 func round(x float64) uint8 {
 	if x - math.Floor(x) >= 0.5 {
 		return uint8(math.Ceil(x))
@@ -150,7 +179,7 @@ func round(x float64) uint8 {
 	return uint8(math.Floor(x))
 }
 
-func quodiff(diff imagediff, div int) imagediff {
+func quodiff(diff imagediff, div float64) imagediff {
 	quo := imagediff{}
 	quo.diff = make([][]colordiff, len(diff.diff))
 
@@ -159,12 +188,11 @@ func quodiff(diff imagediff, div int) imagediff {
 		quo.diff[i] = make([]colordiff, rowlen)
 	}
 
-	fdiv := float64(div)
 	for i, row := range diff.diff {
 		for j, cd := range row {
-			cd.r = cd.r / fdiv
-			cd.g = cd.r / fdiv
-			cd.b = cd.r / fdiv
+			cd.r = cd.r / div
+			cd.g = cd.r / div
+			cd.b = cd.r / div
 
 			quo.diff[i][j] = cd
 		}
@@ -242,7 +270,7 @@ func saveoutput(out []*image.NRGBA) error {
 	for i, pic := range out {
 		go func(i int, pic image.Image, errch chan<- error) {
 			sem<- struct{}{}
-			
+
 			defer func() { <-sem }()
 			err := writeimage(i, pic)
 
@@ -273,7 +301,7 @@ func filter(errch []chan error) error {
 }
 
 func writeimage(i int, pic image.Image) error {
-	filename := fmt.Sprintf("%v.png", i)
+	filename := fmt.Sprintf("0%v.png", i)
 
 	f, err := os.Create(filename)
 
@@ -284,7 +312,7 @@ func writeimage(i int, pic image.Image) error {
 	return imaging.Encode(f, pic, imaging.PNG)
 }
 
-func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, frames int) []*image.NRGBA {
+func kriemhildtrans(picA, picB *image.NRGBA, from, to imagediff, frames int) []*image.NRGBA {
 	outlen := frames + 1
 	out := make([]*image.NRGBA, outlen)
 	out[0] = picA
@@ -292,7 +320,8 @@ func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, frames int) []*imag
 
 	last := out[0]
 	for i := 1; i < len(out) - 1; i++ {
-		last = addimagediff(last, diff)
+		last = subimagediff(last, from)
+		last = addimagediff(last, to)
 		out[i] = last
 	}
 
