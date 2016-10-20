@@ -43,10 +43,10 @@ func kriemhild() error {
 		nrgbas[i] = imaging.Clone(pic)
 	}
 
-	diff := subimage(nrgbas[1], nrgbas[0])
-	diff = quodiff(diff, float64(args.factor))
+	from := subimage(nrgbas[1], nrgbas[0])
+	from = quodiff(from, float64(args.factor))
 
-	out := kriemhildtrans(nrgbas[0], nrgbas[1], diff, args.factor * 10)
+	out := kriemhildtrans(nrgbas[0], nrgbas[1], from, args.factor * 10)
 
 	return saveoutput(out)
 }
@@ -424,7 +424,7 @@ func writeimage(i int, pic image.Image) error {
 	return imaging.Encode(f, pic, imaging.PNG)
 }
 
-func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, factor int) []*image.NRGBA {
+func kriemhildtrans(picA, picB *image.NRGBA, from imagediff, factor int) []*image.NRGBA {
 	outlen := factor + 1
 	out := make([]*image.NRGBA, outlen)
 	out[0] = picA
@@ -432,7 +432,7 @@ func kriemhildtrans(picA, picB *image.NRGBA, diff imagediff, factor int) []*imag
 
 	last := img2diff(picA)
 	for i := 1; i < len(out) - 1; i++ {
-		last = adddiff(last, diff)
+		last = adddiff(last, from)
 		out[i] = diff2img(last)
 	}
 
