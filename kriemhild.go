@@ -46,7 +46,7 @@ func kriemhild() error {
 	from := subimage(nrgbas[1], nrgbas[0])
 	from = quodiff(from, float64(args.factor))
 
-	out := kriemhildtrans(nrgbas[0], nrgbas[1], from, args.factor * 10)
+	out := kriemhildtrans(nrgbas[0], nrgbas[1], from, args.factor)
 
 	return saveoutput(out)
 }

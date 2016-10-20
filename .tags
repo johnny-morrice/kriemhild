@@ -1,0 +1,60 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	0	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+main	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^package main$/;"	package	line:1
+main	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func main() {$/;"	func	line:13
+main	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func main() {$/;"	func	line:13
+kriemhild	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func kriemhild() error {$/;"	func	line:21
+kriemhild	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func kriemhild() error {$/;"	func	line:21
+imagediff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type imagediff struct {$/;"	type	line:54
+imagediff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type imagediff struct {$/;"	type	line:54
+at	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func (id imagediff) at(x, y int) colordiff {$/;"	func	line:58
+at	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func (id imagediff) at(x, y int) colordiff {$/;"	func	line:58
+set	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func (id imagediff) set(x, y int, cd colordiff) {$/;"	func	line:62
+set	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func (id imagediff) set(x, y int, cd colordiff) {$/;"	func	line:62
+colordiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type colordiff struct {$/;"	type	line:66
+colordiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type colordiff struct {$/;"	type	line:66
+bounds	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type bounds struct {$/;"	type	line:72
+bounds	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type bounds struct {$/;"	type	line:72
+loopbounds	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func loopbounds(pic *image.NRGBA) bounds {$/;"	func	line:79
+loopbounds	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func loopbounds(pic *image.NRGBA) bounds {$/;"	func	line:79
+subimage	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func subimage(a, b *image.NRGBA) imagediff {$/;"	func	line:94
+subimage	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func subimage(a, b *image.NRGBA) imagediff {$/;"	func	line:94
+addimagediff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func addimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {$/;"	func	line:120
+addimagediff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func addimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {$/;"	func	line:120
+subimagediff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func subimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {$/;"	func	line:146
+subimagediff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func subimagediff(pic *image.NRGBA, diff imagediff) *image.NRGBA {$/;"	func	line:146
+subdiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func subdiff(a, b imagediff) imagediff {$/;"	func	line:172
+subdiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func subdiff(a, b imagediff) imagediff {$/;"	func	line:172
+adddiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func adddiff(a, b imagediff) imagediff {$/;"	func	line:195
+adddiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func adddiff(a, b imagediff) imagediff {$/;"	func	line:195
+img2diff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func img2diff(pic *image.NRGBA) imagediff {$/;"	func	line:218
+img2diff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func img2diff(pic *image.NRGBA) imagediff {$/;"	func	line:218
+diff2img	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func diff2img(diff imagediff) *image.NRGBA {$/;"	func	line:244
+diff2img	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func diff2img(diff imagediff) *image.NRGBA {$/;"	func	line:244
+boundsdiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func boundsdiff(bounds bounds) imagediff {$/;"	func	line:276
+boundsdiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func boundsdiff(bounds bounds) imagediff {$/;"	func	line:276
+round	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func round(x float64) uint8 {$/;"	func	line:286
+round	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func round(x float64) uint8 {$/;"	func	line:286
+quodiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func quodiff(diff imagediff, div float64) imagediff {$/;"	func	line:294
+quodiff	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func quodiff(diff imagediff, div float64) imagediff {$/;"	func	line:294
+checkbounds	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func checkbounds(imgs []image.Image) error {$/;"	func	line:316
+checkbounds	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func checkbounds(imgs []image.Image) error {$/;"	func	line:316
+readimages	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func readimages(paths []string) ([]image.Image, error) {$/;"	func	line:328
+readimages	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func readimages(paths []string) ([]image.Image, error) {$/;"	func	line:328
+saveoutput	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func saveoutput(out []*image.NRGBA) error {$/;"	func	line:371
+saveoutput	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func saveoutput(out []*image.NRGBA) error {$/;"	func	line:371
+filter	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func filter(errch []chan error) error {$/;"	func	line:402
+catch	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^	var catch error$/;"	var	line:403
+filter	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func filter(errch []chan error) error {$/;"	func	line:402
+writeimage	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func writeimage(i int, pic image.Image) error {$/;"	func	line:415
+writeimage	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func writeimage(i int, pic image.Image) error {$/;"	func	line:415
+kriemhildtrans	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func kriemhildtrans(picA, picB *image.NRGBA, from imagediff, factor int) []*image.NRGBA {$/;"	func	line:427
+kriemhildtrans	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func kriemhildtrans(picA, picB *image.NRGBA, from imagediff, factor int) []*image.NRGBA {$/;"	func	line:427
+params	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type params struct {$/;"	type	line:442
+params	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^type params struct {$/;"	type	line:442
+readargs	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func readargs() (*params, error) {$/;"	func	line:448
+readargs	/home/jmorrice/gospace/src/github.com/johnny-morrice/kriemhild/kriemhild.go	/^func readargs() (*params, error) {$/;"	func	line:448
